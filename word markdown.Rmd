@@ -1,0 +1,42 @@
+---
+title: "Overall Summary"
+author: "JRA Team"
+date: "1/19/2022"
+output: word_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, comment=NA)
+
+setwd("C:/Users/75LPYOTT/OneDrive - West Chester University of PA/Desktop/JRA2022")
+data <- read.csv("data.csv", header=T)
+library(knitr)
+library(kableExtra)
+
+
+```
+
+$~$
+
+# Section A: About You
+
+$~$
+
+```{r A}
+
+#############
+##Section A
+table(data$X1)
+kable(table(data$X1), caption="Size of Household")
+#
+kable(table(data$X3), caption="**How did you first hear about JRA?**")
+#kbl(table(data$X4), caption="Referral from Agency")
+#kbl(table(data$X5), caption="How long have you been receiving JRA food boxes?")
+#kbl(table(data$X6), caption="Employment Status")
+#kbl(table(data$X7), caption="Is anyone in your household (not including you) unmployed?")
+#kbl(table(data$X8), caption="Country of Origin")
+#kbl(table(data$X9), caption="Primary Language")
+```
+
+$~$

@@ -1,0 +1,824 @@
+
+
+---
+output: html_document
+
+---
+
+
+```{r setup, comment=NA, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, comment=NA)
+
+setwd("C:/Users/75LPYOTT/OneDrive - West Chester University of PA/Desktop/JRA2022")
+library(dplyr)
+library(summarytools)
+library(questionr)
+library(kableExtra)
+library(tidyverse)
+library(splitstackshape)
+
+data=read.csv("jra2022april27.csv", header=T)
+```
+
+
+# Jewish Relief Agency
+## Client Survey 2022
+
+This summary compiles information on survey data collected anonymously from JRA recipients in 2022. Surveys included demographics questions, food insecurity questions, and satisfaction questions regarding JRA services. In January, the survey was sent to 1,800 households.  Recipients could either complete their paper survey and mail it back to the JRA or utilize the QR code that printed on the survey and answer the same questions in a Qualtrics survey. Recipients received either an English or Russian survey, based on demographic information JRA had on record. Six versions of the survey were sent (English/Russian):   
+
+* General survey (489/534)
+
+*	Family Friendly (188/70)
+
+*	Holocaust Survivors (16/317)
+
++	General and Everyday Essentials (59/17)
+
++	Family Friendly and Everyday Essentials (75/21)
+
+*	Holocaust Survivors and Everyday Essentials (3/11)
+
+
+```{r summary, include=FALSE}
+
+totaln=nrow(data)
+responserate=round(100*(totaln/1800), 1)
+
+#HC3 Holocaust=yes is respondents who identified as HC
+HC3 <-filter(data, Q30=="Yes")
+#HC4 respondents who live with a HC
+HC4 <-filter(data, Q31=="Yes")
+totalHC=nrow(HC3)+nrow(HC4)
+#HC is the union of HC1 and HC2 removing duplicates
+HC2022 <- union(HC3, HC4)
+#remove missing values
+HChouse=nrow(HC2022)
+#Family freindly surveys
+bluebag2022 <-filter(data, Q23=="Yes")
+totalFF= nrow(bluebag2022)
+```
+
+
+
+A total of `r totaln` households responded to the survey; the response rate was `r responserate`%. For the `r totaln` households that responded to the survey, `r HChouse` households identified themselves or someone living with them as a Holocaust Survivor, with a total of `r totalHC` survivors. There are `r totalFF` households who received a Family Friendly food bag. 
+
+All surveys were entered into a database via Qualtrics and was analyzed by students at West Chester University, with supervision and guidance from Professor Laura Pyott, Department of Mathematics. 
+
+**Section A: Demographics**
+$~$
+
+
+```{r Q1}
+
+q1=questionr::freq(data$Q1, cum=FALSE, total=FALSE, valid=FALSE)
+q1 %>%
+  kbl(caption="1. How many people currently live in your household?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+
+```{r Q3}
+Q3=as.data.frame(data$Q3)
+Q3 <- Q3 %>% mutate_all(na_if,"") %>% na.omit(Q3)
+q3=questionr::freq(Q3, cum=FALSE, total=FALSE, valid=FALSE)
+q3 %>%
+  kbl(caption="3. How did you first hear about JRA?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+   column_spec(1, width="3.0in")
+```
+$~$
+
+```{r Q4}
+Q4=as.data.frame(data$Q4)
+Q4 <- Q4 %>% mutate_all(na_if,"") %>% na.omit(Q4)
+q4=questionr::freq(Q4, cum=FALSE, total=FALSE, valid=FALSE)
+q4 %>%
+ kbl(caption="4. Were you referred to JRA by one of the following agencies, or another agency?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+   column_spec(1, width="3.0in")
+
+```
+
+
+$~$
+
+
+```{r Q5}
+###Question 5 is the client's time with the agency
+
+```
+
+$~$
+
+```{r Q6}
+employment <- data %>%
+  mutate(emp=case_when(grepl("Employed", Q6)~"Yes", TRUE~"No")) %>%
+  mutate(unemp=case_when(grepl("Unemployed", Q6)~"Yes", TRUE~"No")) %>%
+  mutate(retired=case_when(grepl("Retired", Q6)~"Yes", TRUE~"No")) %>%
+  mutate(student=case_when(grepl("Student", Q6)~"Yes", TRUE~"No")) %>%
+  mutate(disabled=case_when(grepl("Disabled", Q6)~"Yes", TRUE~"No")) 
+
+t61=questionr::freq(employment$emp, cum=FALSE, total=FALSE)
+t62=questionr::freq(employment$unemp, cum=FALSE, total=FALSE)
+t63=questionr::freq(employment$retired, cum=FALSE, total=FALSE)
+t64=questionr::freq(employment$student, cum=FALSE, total=FALSE)
+t65=questionr::freq(employment$disabled, cum=FALSE, total=FALSE)
+
+Status=c("Employed", "Unemployed", "Retired", "Student", "Disabled")
+
+counts06=c(t61$n[2], t62$n[2], t63$n[2], t64$n[2], t65$n[2])
+
+percents06=c(t61$`%`[2], t62$`%`[2], t63$`%`[2], t64$`%`[2], t65$`%`[2])
+
+table06=as.data.frame(cbind(Status, counts06, percents06))
+
+table06 %>%
+  kbl(caption="6. What is your employment status?", col.names=c("Status", "Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+
+$~$
+
+```{r Q7}
+Q7=as.data.frame(data$Q7)
+Q7 <- Q7 %>% mutate_all(na_if,"") %>% na.omit(Q7)
+q7=questionr::freq(Q7, cum=FALSE, total=FALSE, valid=FALSE)
+q7 %>%
+  kbl(caption="7. Is anyone in your household (not including you) currently employed?",col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+
+```{r Q8}
+Q8=as.data.frame(data$Q8) %>% mutate_all(na_if,"") %>% na.omit(Q8)
+q8=questionr::freq(Q8, cum=FALSE, total=FALSE, valid=FALSE)
+q8 %>%
+  kbl(caption="8. What is your country of origin?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+
+
+```{r Q9}
+Q9=as.data.frame(data$Q9) %>% mutate_all(na_if,"") %>% na.omit(Q9)
+q9=questionr::freq(Q9, cum=FALSE, total=FALSE, valid=FALSE)
+q9 %>%
+  kbl(caption="9. What is your primary language?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+
+$~$
+
+$~$
+
+$~$
+
+**Section B: About the JRA box that you receive**
+
+```{r Q10}
+dietary <- data %>%
+  mutate(special=case_when(grepl("special", Q10)~"Yes", TRUE~"No")) %>%
+  mutate(salt=case_when(grepl("salt", Q10)~"Yes", TRUE~"No")) %>%
+  mutate(chol=case_when(grepl("cholesterol", Q10)~"Yes", TRUE~"No")) %>%
+  mutate(sugar=case_when(grepl("sugar", Q10)~"Yes", TRUE~"No")) %>%
+  mutate(gluten=case_when(grepl("Gluten", Q10)~"Yes", TRUE~"No")) %>%
+  mutate(nut=case_when(grepl("Nut", Q10)~"Yes", TRUE~"No")) %>%
+  mutate(other=case_when(grepl("Other", Q10)~"Yes", TRUE~"No"))
+
+t101 <- questionr::freq(dietary$special, cum=FALSE, total=FALSE)
+t102 <- questionr::freq(dietary$salt, cum=FALSE, total=FALSE)
+t103 <- questionr::freq(dietary$chol, cum=FALSE, total=FALSE)
+t104 <- questionr::freq(dietary$sugar, cum=FALSE, total=FALSE)
+t105<- questionr::freq(dietary$gluten, cum=FALSE, total=FALSE)
+t106 <- questionr::freq(dietary$nut, cum=FALSE, total=FALSE)
+t107 <- questionr::freq(dietary$other, cum=FALSE, total=FALSE)
+
+labels10=c("No special needs", "Low salt", "Low cholesterol", "Low sugar",
+           "Gluten-free", "Nut-free", "Other")
+counts10=c(t101$n [2], t102$n [2], t103$n [2], t104$n [2], t105$n [2], t106$n [2], t107$n [2])
+percents10=c(t101$`%` [2], t102$`%` [2], t103$`%` [2], t104$`%` [2], t105$`%` [2], t106$`%` [2], t107$`%` [2])
+
+table10=as.data.frame(cbind(labels10, counts10, percents10))
+
+table10 %>%
+  kbl(caption="10. Do you have special dietary needs?", col.names=c("Special Dietary Needs", "Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+
+```{r Q11}
+data$Q11=factor(data$Q11, 
+                levels = c("Dissatisfied", "Somewhat dissatisfied", "Neutral", "Satisfied", "Very satisfied"))
+Q11=as.data.frame(data$Q11) %>% mutate_all(na_if,"") %>% na.omit(Q11)
+q11=questionr::freq(Q11, cum=FALSE, total=FALSE, valid=FALSE)
+q11 %>%
+  kbl(caption="11. What is your overall satisfaction with the box of food you receive from JRA?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+```{r Q12}
+Q12=as.data.frame(data$Q12) %>% mutate_all(na_if,"") %>% na.omit(Q12)
+q12=questionr::freq(Q12, cum=FALSE, total=FALSE, valid=FALSE)
+q12 %>%
+  kbl(caption="12. How many meals are you able to prepare using the items in the food box?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+```{r Q13}
+
+
+Q13= data %>%
+  select(Q13) %>%
+  mutate(toilet=case_when(grepl("toilet", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(masks=case_when(grepl("masks", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(soap=case_when(grepl("soap", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(tuna=case_when(grepl("tuna", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(salmon=case_when(grepl("salmon", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(oatmeal=case_when(grepl("oatmeal", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(pasta=case_when(grepl("pasta", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(beans=case_when(grepl("beans", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(fruit=case_when(grepl("fruit", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(vegetables=case_when(grepl("vegetables", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(soup=case_when(grepl("soup", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(oil=case_when(grepl("oil", Q13)~"Yes", TRUE~"No")) %>%
+  mutate(crackers=case_when(grepl("crackers", Q13)~"Yes", TRUE~"No"))
+
+
+t131=questionr::freq(Q13$toilet, cum=FALSE, total=FALSE)
+t132=questionr::freq(Q13$masks, cum=FALSE, total=FALSE)
+t133=questionr::freq(Q13$soap, cum=FALSE, total=FALSE)
+t134=questionr::freq(Q13$tuna, cum=FALSE, total=FALSE)
+t135=questionr::freq(Q13$salmon, cum=FALSE, total=FALSE)
+t136=questionr::freq(Q13$oatmeal, cum=FALSE, total=FALSE)
+t137=questionr::freq(Q13$pasta, cum=FALSE, total=FALSE)
+t138=questionr::freq(Q13$beans, cum=FALSE, total=FALSE)
+t139=questionr::freq(Q13$fruit, cum=FALSE, total=FALSE)
+t1310=questionr::freq(Q13$vegetables, cum=FALSE, total=FALSE)
+t1311=questionr::freq(Q13$soup, cum=FALSE, total=FALSE)
+t1312=questionr::freq(Q13$oil, cum=FALSE, total=FALSE)
+t1313=questionr::freq(Q13$crackers, cum=FALSE, total=FALSE)
+
+
+labels=c("Toilet paper", "Masks", "Soap", 
+         "Canned tuna", "Canned salmon", "Oatmeal", "Pasta", "Canned beans",
+         "Canned fruit", "Canned vegetables", "Soup mix", "Oil", "Crackers")
+count13=c(t131$n [2], t132$n [2], t133$n [2], t134$n [2], t135$n [2], t136$n [2], 
+        t137$n [2], t138$n [2], t139$n [2], t1310$n [2], t1311$n [2], t1312$n [2],t1313$n [2])
+
+percent13=c(t131$`%` [2], t132$`%` [2], t133$`%` [2], t134$`%` [2], t135$`%` [2], t136$`%` [2], 
+        t137$`%` [2], t138$`%` [2], t139$`%` [2], t1310$`%` [2], t1311$`%` [2], t1312$`%` [2],t1313$`%` [2])
+
+table13=as.data.frame(cbind(labels, count13, percent13))
+table13 %>%
+  kbl(caption="13. Select up to 5 items from the following list that are your favorite or most helpful in the JRA food box", col.names=c("Item", "Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+
+```{r Q14}
+
+benefits <- data %>%
+  mutate(enough=case_when(grepl("enough", Q14)~"Yes", TRUE~"No")) %>%
+  mutate(bills=case_when(grepl("bills", Q14)~"Yes", TRUE~"No")) %>%
+  mutate(secure=case_when(grepl("secure", Q14)~"Yes", TRUE~"No")) %>%
+  mutate(nutritious=case_when(grepl("nutritious", Q14)~"Yes", TRUE~"No")) %>%
+  mutate(illness=case_when(grepl("illness", Q14)~"Yes", TRUE~"No")) %>%
+  mutate(transport=case_when(grepl("transport", Q14)~"Yes", TRUE~"No"))
+t141 <- questionr::freq(benefits$enough, cum=FALSE, total=FALSE)
+t142 <- questionr::freq(benefits$bills, cum=FALSE, total=FALSE)
+t143 <- questionr::freq(benefits$secure, cum=FALSE, total=FALSE)
+t144 <- questionr::freq(benefits$nutritious, cum=FALSE, total=FALSE)
+t145<- questionr::freq(benefits$illness, cum=FALSE, total=FALSE)
+t146 <- questionr::freq(benefits$transport, cum=FALSE, total=FALSE)
+
+labels=c("I have enough food to eat each month", "I am able to pay my bills", "I feel more food secure", 
+         "I have access to more nutrituous food", "I am unable to get to the store due to illness/disability", 
+         "I am unable to get to the store due to lack of transportation")
+count=c(t141$n [2], t142$n [2], t143$n [2], t144$n [2], t145$n [2], t146$n [2])
+percent=c(t141$`%` [2], t142$`%` [2], t143$`%` [2], t144$`%` [2], t145$`%` [2], t146$`%` [2])
+
+table14=as.data.frame(cbind(labels, count, percent))
+table14 %>%
+  kbl(caption="14. How does the JRA food box help you?", col.names=c("Benefit", "Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+
+```
+
+$~$
+
+
+```{r Q15}
+Q15=as.data.frame(data$Q15) %>% mutate_all(na_if,"") %>% na.omit(Q15)
+q15=questionr::freq(Q15, cum=FALSE, total=FALSE, valid=FALSE)
+q15 %>%
+  kbl(caption="15. Does the food you receive from JRA meet your food needs?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+```{r Q16}
+
+data$Services=data$Q16
+services <- data %>%
+  mutate(SNAP=case_when(grepl("SNAP", Services)~"Yes", TRUE~"No")) %>%
+  mutate(Mitzvah=case_when(grepl("Mitzvah", Services)~"Yes", TRUE~"No")) %>%
+  mutate(SSI=case_when(grepl("SSI", Services)~"Yes", TRUE~"No")) %>%
+  mutate(SS=case_when(grepl("Social", Services)~"Yes", TRUE~"No")) %>%
+  mutate(JEVS=case_when(grepl("JEVS", Services)~"Yes", TRUE~"No")) %>%
+  mutate(Slipper=case_when(grepl("Slipper", Services)~"Yes", TRUE~"No")) %>%
+  mutate(Klein=case_when(grepl("Klein", Services)~"Yes", TRUE~"No")) %>%
+  mutate(JFCS=case_when(grepl("JFCS", Services)~"Yes", TRUE~"No")) %>%
+  mutate(Friend=case_when(grepl("Friend", Services)~"Yes", TRUE~"No")) %>%
+  mutate(Welfare=case_when(grepl("Welfare", Services)~"Yes", TRUE~"No")) %>%
+  mutate(WIC=case_when(grepl("WIC", Services)~"Yes", TRUE~"No")) %>%
+  mutate(PCA=case_when(grepl("PCA", Services)~"Yes", TRUE~"No")) %>%
+  mutate(Wheels=case_when(grepl("Wheels", Services)~"Yes", TRUE~"No")) %>%
+  mutate(SSD=case_when(grepl("SSD", Services)~"Yes", TRUE~"No")) %>%
+  mutate(LIHEAP=case_when(grepl("LIHEAP", Services)~"Yes", TRUE~"No")) %>%
+  mutate(Unemp=case_when(grepl("Unemp", Services)~"Yes", TRUE~"No")) %>%
+  mutate(EITC=case_when(grepl("Earned", Services)~"Yes", TRUE~"No")) %>%
+  mutate(None=case_when(grepl("agencies", Services)~"Yes", TRUE~"No")) %>%
+  mutate(Free=case_when(grepl("Free", Services)~"Yes", TRUE~"No")) 
+
+SNAP=questionr::freq(services$SNAP, cum=FALSE, total=FALSE)
+Mitzvah=questionr::freq(services$Mitzvah, cum=FALSE, total=FALSE)
+SSI=questionr::freq(services$SSI, cum=FALSE, total=FALSE)
+Social=questionr::freq(services$SS, cum=FALSE, total=FALSE)
+JEVS=questionr::freq(services$JEVS, cum=FALSE, total=FALSE)
+Slipper=questionr::freq(services$Slipper, cum=FALSE, total=FALSE)
+Klein=questionr::freq(services$Klein, cum=FALSE, total=FALSE) 
+JFCS=questionr::freq(services$JFCS, cum=FALSE, total=FALSE) 
+Friend=questionr::freq(services$Friend, cum=FALSE, total=FALSE) 
+Welfare=questionr::freq(services$Welfare, cum=FALSE, total=FALSE) 
+WIC=questionr::freq(services$WIC, cum=FALSE, total=FALSE) 
+PCA=questionr::freq(services$PCA, cum=FALSE, total=FALSE) 
+Wheels=questionr::freq(services$Wheels, cum=FALSE, total=FALSE) 
+SSD=questionr::freq(services$SSD, cum=FALSE, total=FALSE) 
+LIHEAP=questionr::freq(services$LIHEAP, cum=FALSE, total=FALSE) 
+Unemp=questionr::freq(services$Unemp, cum=FALSE, total=FALSE) 
+Earned=questionr::freq(services$EITC, cum=FALSE, total=FALSE) 
+agencies=questionr::freq(services$None, cum=FALSE, total=FALSE) 
+Free=questionr::freq(services$Free, cum=FALSE, total=FALSE) 
+
+Labels16=c("SNAP", "Mitzvah Food Program", "SSI", "Social", "JEVS", "Golden Slipper",
+         "Hot meals at KleinLife or Federation Housing", "JFCS", "Cook for a Friend Meal Delivery", "Cash Assitance (Welfare)", "WIC", "PCA",
+         "Wheels", "SSD", "LIHEAP", "Unemployment", "Earned Income Tax Credit", 
+         "I do not receive benefits from any other agencies", "Free or reduced price lunch")
+
+counts16=c(SNAP$n [2], Mitzvah$n [2], SSI$n [2], Social$n [2], JEVS$n [2], Slipper$n [2],
+           Klein$n [2], JFCS$n [2], Friend$n [2], Welfare$n [2], WIC$n [2], PCA$n [2],
+           Wheels$n [2], SSD$n [2], LIHEAP$n [2], Unemp$n [2], Earned$n [2],
+           agencies$n [2], Free$n [2])
+percents16=c(SNAP$`%` [2], Mitzvah$`%` [2], SSI$`%` [2], Social$`%` [2], JEVS$`%` [2], Slipper$`%` [2],
+           Klein$`%` [2], JFCS$`%` [2], Friend$`%` [2], Welfare$`%` [2], WIC$`%` [2], PCA$`%` [2],
+           Wheels$`%` [2], SSD$`%` [2], LIHEAP$`%` [2], Unemp$`%` [2], Earned$`%` [2],
+           agencies$`%` [2], Free$`%` [2])
+
+table16=as.data.frame(cbind(Labels16, counts16, percents16))
+
+
+table16 %>%
+  kbl(caption="16. Do you currently receive any of the following benefits or services?", col.names=c("Service", "Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+$~$
+$~$
+
+**Section C: Challenges you may face**
+
+```{r Q17}
+Q17=as.data.frame(data$Q17) %>% mutate_all(na_if,"") %>% na.omit(Q17)
+q17=questionr::freq(Q17, cum=FALSE, total=FALSE, valid=FALSE)
+q17 %>%
+  kbl(caption="17. Within the past 12 months, we worried whether our food would run out before we got money to buy more", 
+      col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+```{r Q18}
+Q18=as.data.frame(data$Q18) %>% mutate_all(na_if,"") %>% na.omit(Q18)
+q18=questionr::freq(Q18, cum=FALSE, total=FALSE, valid=FALSE)
+q18 %>%
+  kbl(caption="18. Within the past 12 months, the food we bought just didn’t last and we didn’t have money to get more", 
+      col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+$~$
+
+$~$
+
+**Section D: Culture and the Jewish Community**
+
+```{r Q19}
+Q19=as.data.frame(data$Q19) %>% mutate_all(na_if,"") %>% na.omit(Q19)
+q19=questionr::freq(Q19, cum=FALSE, total=FALSE, valid=FALSE)
+q19 %>%
+  kbl(caption="19. Do you identify as Jewish?", 
+      col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+
+```{r Q20}
+Q20=as.data.frame(data$Q20) %>% mutate_all(na_if,"") %>% na.omit(Q20)
+q20=questionr::freq(Q20, cum=FALSE, total=FALSE, valid=FALSE)
+q20 %>%
+  kbl(caption="20. If yes, how do you identify yourself?", 
+      col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+```{r Q21}
+Q21=as.data.frame(data$Q21) %>% mutate_all(na_if,"") %>% na.omit(Q21)
+q21=questionr::freq(Q21, cum=FALSE, total=FALSE, valid=FALSE)
+q21 %>%
+  kbl(caption="21. Does receiving a box of kosher food from JRA make you feel connected to the Jewish community?", 
+      col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+```{r Q22}
+Q22=as.data.frame(data$Q22) %>% mutate_all(na_if,"") %>% na.omit(Q22)
+q22=questionr::freq(Q22, cum=FALSE, total=FALSE, valid=FALSE)
+q22 %>%
+  kbl(caption=" 22. Does receiving special foods for Jewish holidays in the JRA box enable you to have a more meaningful celebration? (Some examples of Jewish Holiday foods include hamantashen, gefilte fish, grape juice, Hanukkah gelt and matzah.)", 
+      col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+
+ $~$
+ 
+$~$
+
+
+**Section E: Family Friendly Food Program**
+
+```{r Q23}
+Q23=as.data.frame(data$Q23) %>% mutate_all(na_if,"") %>% na.omit(Q23)
+q23=questionr::freq(Q23, cum=FALSE, total=FALSE, valid=FALSE)
+q23 %>%
+  kbl(caption="23. Are you part of the Family Friendly Food Program (Blue Bag)?", 
+      col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+
+```{r Q24}
+Q24=as.data.frame(data$Q24) %>% mutate_all(na_if,"") %>% na.omit(Q24)
+q24=questionr::freq(Q24, cum=FALSE, total=FALSE, valid=FALSE)
+q24 %>%
+  kbl(caption="24. What is your overall satisfaction with the food provided in the Family Friendly Program (Blue Bag)?", 
+      col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+```{r Q25}
+
+FFuse <- data %>%
+  mutate(snacks=case_when(grepl("Snacks", Q25)~"Yes", TRUE~"No")) %>%
+  mutate(lunch=case_when(grepl("lunch", Q25)~"Yes", TRUE~"No")) %>%
+  mutate(between=case_when(grepl("between", Q25)~"Yes", TRUE~"No")) %>%
+  mutate(replace=case_when(grepl("place", Q25)~"Yes", TRUE~"No")) %>%
+  mutate(supplement=case_when(grepl("supplemental", Q25)~"Yes", TRUE~"No")) 
+
+t251 <- questionr::freq(FFuse$snacks, cum=FALSE, total=FALSE)
+t252 <- questionr::freq(FFuse$lunch, cum=FALSE, total=FALSE)
+t253 <- questionr::freq(FFuse$between, cum=FALSE, total=FALSE)
+t254 <- questionr::freq(FFuse$replace, cum=FALSE, total=FALSE)
+t255<- questionr::freq(FFuse$supplement, cum=FALSE, total=FALSE)
+
+
+labels25=c("Snacks for school", "Part of a school lunch", "As a snack between meals", "In place of a meal", "Supplemental to a meal")
+counts25=c(t251$n[2], t252$n[2], t253$n[2], t254$n[2], t255$n[2])
+percents25=c(t251$n[2]/totalFF, t252$n[2]/totalFF, t253$n[2]/totalFF, t254$n[2]/totalFF, t255$n[2]/totalFF)
+percents25=100*round(percents25, 3)
+
+
+table25=as.data.frame(cbind(labels25, counts25, percents25))
+
+table25 %>%
+  kbl(caption="25. How do you use the Family Friendly Food program?", 
+  col.names=c("Uses", "Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+```{r Q26}
+
+
+FFitems <- data %>%
+  mutate(pb=case_when(grepl("peanut", Q26)~"Yes", TRUE~"No")) %>%
+  mutate(jam=case_when(grepl("jam", Q26)~"Yes", TRUE~"No")) %>%
+  mutate(crackers=case_when(grepl("crackers", Q26)~"Yes", TRUE~"No")) %>%
+  mutate(pretzels=case_when(grepl("pretzels", Q26)~"Yes", TRUE~"No")) %>%
+    mutate(granola=case_when(grepl("granola", Q26)~"Yes", TRUE~"No")) %>%
+  mutate(oatmeal=case_when(grepl("oatmeal", Q26)~"Yes", TRUE~"No")) %>%
+  mutate(fruit=case_when(grepl("fruit", Q26)~"Yes", TRUE~"No")) 
+
+t261 <- questionr::freq(FFitems$pb, cum=FALSE, total=FALSE)
+t262 <- questionr::freq(FFitems$jam, cum=FALSE, total=FALSE)
+t263 <- questionr::freq(FFitems$crackers, cum=FALSE, total=FALSE)
+t264 <- questionr::freq(FFitems$granola, cum=FALSE, total=FALSE)
+t265<- questionr::freq(FFitems$oatmeal, cum=FALSE, total=FALSE)
+t266<- questionr::freq(FFitems$fruit, cum=FALSE, total=FALSE)
+
+
+labels26=c("Peanut butter", "Jam/jelly", "Crackers", "Pretzels","Granola bars", "Instant oatmeal", "Fruit cups")
+counts26=c(t261$n [2], t262$n [2], t263$n [2], t264$n [2], t265$n [2], t266$n [2])
+percents26=c(t261$n[2]/totalFF, t262$n[2]/totalFF, t263$n[2]/totalFF, t264$n[2]/totalFF, t265$n[2]/totalFF)
+percents26=100*round(percents26, 3)
+
+table26=as.data.frame(cbind(labels26, counts26, percents26))
+
+table26 %>%
+  kbl(caption="26. Select from the following list your top 3 favorite/helpful items in the Family Friendly Food Program (Blue Bag)", col.names=c("Items", "Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+```{r Q27}
+Q27=as.data.frame(data$Q27) %>% mutate_all(na_if,"") %>% na.omit(Q27)
+q27=questionr::freq(Q27, cum=FALSE, total=FALSE, valid=FALSE)
+q27 %>%
+  kbl(caption="27. Because of the Family Friendly Bag, I am able to offer my children more nutritious food", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+  column_spec(1, width="3.0in")
+```
+
+ $~$
+
+```{r Q28}
+data$Q28=factor(data$Q28, 
+                levels = c("Dissatisfied", "Somewhat dissatisfied", "Neutral", "Satisfied", "Very satisfied", "I did not receive a box of produce"))
+Q28=as.data.frame(data$Q28) %>% mutate_all(na_if,"") %>% na.omit(Q28)
+q28=questionr::freq(Q28, cum=FALSE, total=FALSE, valid=FALSE)
+q28 %>%
+  kbl(caption="28. If you received an additional box of produce during the summer months, what was your overall satisfaction with the produce provided?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+
+```
+
+ $~$
+
+```{r Q29}
+data$Q29=factor(data$Q29, 
+                levels = c("100%", "75%", "50%", "25%"))
+Q29=as.data.frame(data$Q29) %>% mutate_all(na_if,"") %>% na.omit(Q29)
+q29=questionr::freq(Q29, cum=FALSE, total=FALSE, valid=FALSE)
+q29 %>%
+  kbl(caption="29. What percentage of the vegetables and fruit from the produce box did you use?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+$~$
+
+**Section F: Holocaust Survivors**
+
+```{r Q30}
+Q30=as.data.frame(data$Q30) %>% mutate_all(na_if,"") %>% na.omit(Q30)
+q30=questionr::freq(Q30, cum=FALSE, total=FALSE, valid=FALSE)
+q30 %>%
+  kbl(caption="30. Do you identify as a Holocaust Survivor?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+```{r Q31}
+Q31=as.data.frame(data$Q31) %>% mutate_all(na_if,"") %>% na.omit(Q31)
+q31=questionr::freq(Q31, cum=FALSE, total=FALSE, valid=FALSE)
+q31 %>%
+  kbl(caption="31. Does anyone else (not including you) currently living in your household identify as a Holocaust Survivor?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+```{r Q32}
+Q32=as.data.frame(data$Q32) %>% mutate_all(na_if,"") %>% na.omit(Q32)
+q32=questionr::freq(Q32, cum=FALSE, total=FALSE, valid=FALSE)
+q32 %>%
+  kbl(caption="32. Does receiving a box of kosher food from JRA make you feel cared for by the Jewish community?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria" ) %>%
+  column_spec(1, width="3.0in")
+```
+
+ $~$
+
+```{r Q33}
+
+FFservices <- data %>%
+  mutate(incont=case_when(grepl("supplies", Q33)~"Yes", TRUE~"No")) %>%
+  mutate(trans=case_when(grepl("pantry", Q33)~"Yes", TRUE~"No")) %>%
+  mutate(other=case_when(grepl("Other", Q33)~"Yes", TRUE~"No"))
+
+
+t331 <- questionr::freq(FFservices$incont, cum=FALSE, total=FALSE)
+t332 <- questionr::freq(FFservices$trans, cum=FALSE, total=FALSE)
+t333 <- questionr::freq(FFitems$other, cum=FALSE, total=FALSE)
+
+
+
+labels33=c("Incontinence supplies", "Transportation to a pantry or appointment", "Other")
+counts33=c(t331$n[2], t332$n[2], t333$n[2])
+percents33=c(t331$n[2]/totalFF, t332$n[2]/totalFF, t333$n[2]/totalFF)
+percents33=100*round(percents33, 3)
+
+table33=as.data.frame(cbind(labels33, counts33, percents33))
+table33 %>%
+  kbl(caption="33. Are there other services you need that are not currently being provided to you by another human service agency?", col.names=c("Services", "Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+$~$
+
+$~$
+**Section G: Everyday Essentials**
+
+
+```{r Q34}
+Q34=as.data.frame(data$Q34) %>% mutate_all(na_if,"") %>% na.omit(Q34)
+q34=questionr::freq(Q34, cum=FALSE, total=FALSE, valid=FALSE)
+q34 %>%
+  kbl(caption="34. Do you receive Everyday Essentials (toiletries, incontinence, and/or diaper supplies)?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+		
+ $~$
+
+```{r Q35}
+Q35=as.data.frame(data$Q35) %>% mutate_all(na_if,"") %>% na.omit(Q35)
+q35=questionr::freq(Q35, cum=FALSE, total=FALSE, valid=FALSE)
+q35 %>%
+  kbl(caption="35. What is your overall satisfaction with JRA’s Everyday Essentials Program?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+
+ $~$
+
+
+
+```{r Q36, include=FALSE}
+Q36=as.data.frame(data$Q36) %>% mutate_all(na_if,"") %>% na.omit(Q36)
+q36=questionr::freq(Q36, cum=FALSE, total=FALSE, valid=FALSE)
+q36 %>%
+  kbl(caption="36. Select from the following list your top 3 favorite/helpful items in the Everyday Essentials Program.", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+```{r Q37}
+benefitsEE <- data %>%
+  mutate(bills=case_when(grepl("bills", Q37)~"Yes", TRUE~"No")) %>%
+  mutate(needs=case_when(grepl("needs", Q37)~"Yes", TRUE~"No")) %>%
+  mutate(illness=case_when(grepl("illness", Q37)~"Yes", TRUE~"No")) %>%
+  mutate(transport=case_when(grepl("transport", Q37)~"Yes", TRUE~"No"))
+
+
+t371 <- questionr::freq(benefitsEE$bills, cum=FALSE, total=FALSE)
+t372 <- questionr::freq(benefitsEE$needs, cum=FALSE, total=FALSE)
+t373<- questionr::freq(benefitsEE$illness, cum=FALSE, total=FALSE)
+t374 <- questionr::freq(benefitsEE$transport, cum=FALSE, total=FALSE)
+
+labels37=c("Pay other bills", "Health needs", "Illness", "Transportation")
+count37=c(t371$n[2], t372$n[2], t373$n[2], t374$n[2])
+percent37=c(t371$n[2]/104, t372$n[2]/104, t373$n[2]/104, t374$n[2]/104)
+percent37=100*round(percent37, 3)
+
+table37=as.data.frame(cbind(labels37, count37, percent37))
+
+
+table37 %>%
+  kbl(caption="37. How does the JRA’s Everyday Essentials Program help you?", col.names=c("Benefit", "Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+
+ $~$
+
+```{r Q38}
+data$Q38=factor(data$Q38, levels = c("100%", "75%", "50%", "25%"))
+
+Q38=as.data.frame(data$Q38) %>% mutate_all(na_if,"") %>% na.omit(Q38)
+q38=questionr::freq(Q38, cum=FALSE, total=FALSE, valid=FALSE)
+q38 %>%
+  kbl(caption="38. What percentage of the toiletries and incontinence supplies are you able to use from JRA’s monthly food delivery? ", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+
+```{r Q39}
+data$Q39=factor(data$Q39, levels = c("One week", "Two weeks", "Three weeks", "One month", "More than one month"))
+Q39=as.data.frame(data$Q39) %>% mutate_all(na_if,"") %>% na.omit(Q39)
+q39=questionr::freq(Q39, cum=FALSE, total=FALSE, valid=FALSE)
+q39 %>%
+  kbl(caption="39. If you receive diapers, how long do they last?",col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+	
+```{r Q40}
+data$Q40=factor(data$Q40, levels = c("One week", "Two weeks", "Three weeks", "One month"))
+Q40=as.data.frame(data$Q40) %>% mutate_all(na_if,"") %>% na.omit(Q40)
+q40=questionr::freq(Q40, cum=FALSE, total=FALSE, valid=FALSE)
+q40 %>%
+  kbl(caption="40. If you receive incontinence supplies, how long do they last?" , col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+ $~$
+
+
+```{r Q41}
+Q41=as.data.frame(data$Q41) %>% mutate_all(na_if,"") %>% na.omit(Q41)
+q41=questionr::freq(Q41, cum=FALSE, total=FALSE, valid=FALSE)
+q41 %>%
+  kbl(caption="41. Are you receiving incontinence supplies or children's diapers from any other agencies?", col.names=c("Total (n)", "Percentage (%)")) %>%
+  kable_classic_2(full_width=F, html_font="Cambria") %>%
+    column_spec(1, width="3.0in")
+```
+
+
+
+
+

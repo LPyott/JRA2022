@@ -1,0 +1,180 @@
+---
+title: "Overall Summary"
+author: "JRA Team"
+date: "1/19/2022"
+output: word_document
+always_allow_html: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, comment=NA)
+
+setwd("C:/Users/75LPYOTT/OneDrive - West Chester University of PA/Desktop/JRA2022")
+data <- read.csv("data.csv", header=T)
+library(knitr)
+library(kableExtra)
+library(flextable)
+library(janitor)
+library(officer)
+
+ft <- qflextable(head(data))
+
+set_caption(ft, caption="JRA Client Satisaction Survey 2022",
+             style="Table Caption", 
+             autonum=run_autonum(seq_id="tab", bkm="tab1"))
+```
+
+$~$
+
+# Section A: About You
+
+$~$
+
+```{r A}
+
+#############
+##Section A
+
+x1table <- data %>%
+  tabyl(X1) %>%
+  adorn_pct_formatting(digits=0)
+
+x1table <- flextable(x1table) %>%
+  set_header_labels(X1="Q1", n="N", percent="Pct")
+
+x1table
+
+
+x3table <- data %>%
+  tabyl(X3) %>%
+  adorn_pct_formatting(digits=0)
+
+x3table <- flextable(x3table) %>%
+  set_header_labels(X3="Q3", n="N", percent="Pct")
+##
+##
+##
+x3table
+
+kable(table(data$X1), caption="Size of Household")
+#
+kable(table(data$X3), caption="**How did you first hear about JRA?**")
+#
+kbl(table(data$X4), caption="Referral from Agency")
+#
+kbl(table(data$X5), caption="How long have you been receiving JRA food boxes?")
+#
+kbl(table(data$X6), caption="Employment Status")
+#
+kbl(table(data$X7), caption="Is anyone in your household (not including you) unmployed?")
+#
+kbl(table(data$X8), caption="Country of Origin")
+#
+kbl(table(data$X9), caption="Primary Language")
+```
+
+$~$
+
+# Section B: About the JRA box that you receive
+
+$~$
+
+```{r B}
+##############
+##Section B
+
+kbl(table(data$X10), caption="Special dietary needs")
+kbl(table(data$X11), caption="Overall satisfaction")
+kbl(table(data$X12), caption="How many meals are you able to prepare?")
+kbl(table(data$X13), caption="Most helpful/favorite items")
+kbl(table(data$X14), caption="How does the food box help you?")
+kbl(table(data$X15), caption="Does the food you receive from JRA meet yout food needs?")
+kbl(table(data$X16), caption="Benefits received")
+```
+
+$~$
+
+# Section C: Challenge you may face
+
+$~$
+
+```{r C}
+##############
+##Section C
+
+kbl(table(data$X17), caption="Within the past 12 months, we worried whether our food would run out before we got money to buy more.")
+kbl(table(data$X18), caption="Within the past 12 months, the food we bought just didn’t last and we didn’t have money to get more.")
+```
+
+$~$
+
+# Section D: Culture and the Jewish Community
+
+$~$
+
+```{r D}
+##############
+##Section D
+
+kbl(table(data$X19), caption="Do you identify as Jewish?")
+kbl(table(data$X20), caption="How do you identify yourself?")
+kbl(table(data$X21), caption="Does receiving a box of kosher food from JRA make you feel connected to the Jewish community?")
+kbl(table(data$X22), caption="Does receiving special foods for Jewish holidays in the JRA box enable you to have a more meaningful celebration?")
+```
+
+$~$
+
+# Section E: Family Friendly Food Program
+
+$~$
+
+```{r E}
+##############
+##Section E
+
+kbl(table(data$X23), caption="Are you a part of the Family Friendly Food Program (blue bag)?")
+kbl(table(data$X24), caption="Overall satisfaction with the food provided in the Family Friendly Food Program?")
+kbl(table(data$X25), caption="How you use the Family Friendly Food Program")
+kbl(table(data$X26), caption="Top 3 favorite/helpful items in the Family Friendly Food Program")
+kbl(table(data$X27), caption="Because of the Family Friendly Bag, I am able to offer my children more nutritious food.")
+kbl(table(data$X28), caption="If you received an additional box of produce during the summer months, what was your overall satisfaction with the produce provided?")
+kbl(table(data$X29), caption="What percentage of the vegetables and fruit from the produce box did you use?")
+```
+
+$~$
+
+# Section F: Holocaust Survivors
+
+$~$
+
+```{r F}
+##############
+##Section F
+
+kbl(table(data$X30), caption="Do you identify as a Holocaust Survivor?")
+kbl(table(data$X31), caption="Does anyone else (not including you) currently living in your household identify as a Holocaust Survivor?")
+kbl(table(data$X32), caption="Does receiving a box of kosher food from JRA make you feel cared for by the Jewish community?")
+kbl(table(data$X33), caption="Are there other services you need that are not currently being provided to you by another human service agency?")
+```
+
+$~$
+
+# Section G: Everyday Essentials
+
+$~$
+
+```{r G}
+
+##############
+##Section G
+
+kbl(table(data$X34), caption="Do you receive Everyday Essentials (toiletries, incontinence, and/or diaper supplies)?")
+kbl(table(data$X35), caption="What is your overall satisfaction with JRA’s Everyday Essentials Program?")
+kbl(table(data$X36), caption="Top 3 favorite/helpful items in the Everyday Essentials Program")
+kbl(table(data$X37), caption="How does JRA’s Everyday Essentials Program help you?")
+kbl(table(data$X38), caption="What % of the toiletries, incontinence supplies, and/or diapers are you able to use from JRA’s monthly food delivery?")
+kbl(table(data$X39), caption="If you receive diapers, how long do they last?")
+kbl(table(data$X40), caption="If you receive incontinence supplies, how long do they last?")
+kbl(table(data$X41), caption="Are you receiving incontinence supplies or children's diapers from any other agencies?")
+```
+
